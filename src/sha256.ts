@@ -85,6 +85,8 @@ export default async (maxInputLenght: number) => {
     }
   });
 
+
+
   const hash = async (input: Uint32Array) => {
     const commandEncoder = device.createCommandEncoder();
 
