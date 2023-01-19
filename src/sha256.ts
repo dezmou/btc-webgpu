@@ -153,13 +153,12 @@ export default async (maxInputLenght: number) => {
 
     await gpuReadindexBuffer.mapAsync(GPUMapMode.READ);
     const index = new Uint32Array(gpuReadindexBuffer.getMappedRange())[0];
-    console.log(index);
 
     let str = "";
     for (let value of Array.from(new Uint32Array(arrayBuffer))) {
       str += value.toString(16).padStart(2, '0');
     }
-    return str;
+    return {str, index};
   }
 
   const hashString = async (inputString: string) => {
