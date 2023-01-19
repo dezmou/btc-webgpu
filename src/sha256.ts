@@ -17,10 +17,10 @@ export default async (maxInputLenght: number) => {
 
   const resultMatrixBufferSize = Uint32Array.BYTES_PER_ELEMENT * 32;
   
-  const resultMatrixBuffer = device.createBuffer({
-    size: resultMatrixBufferSize,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
-  });
+  // const resultMatrixBuffer = device.createBuffer({
+  //   size: resultMatrixBufferSize,
+  //   usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+  // });
 
   const resultIndexBuffer = device.createBuffer({
     size: Int32Array.BYTES_PER_ELEMENT,
@@ -44,13 +44,13 @@ export default async (maxInputLenght: number) => {
           type: "read-only-storage"
         }
       },
-      {
-        binding: 2,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: {
-          type: "storage"
-        }
-      },
+      // {
+      //   binding: 2,
+      //   visibility: GPUShaderStage.COMPUTE,
+      //   buffer: {
+      //     type: "storage"
+      //   }
+      // },
       {
         binding: 3,
         visibility: GPUShaderStage.COMPUTE,
@@ -76,12 +76,12 @@ export default async (maxInputLenght: number) => {
           buffer: gpuBufferSize
         }
       },
-      {
-        binding: 2,
-        resource: {
-          buffer: resultMatrixBuffer
-        }
-      },
+      // {
+      //   binding: 2,
+      //   resource: {
+      //     buffer: resultMatrixBuffer
+      //   }
+      // },
       {
         binding: 3,
         resource: {
@@ -115,18 +115,18 @@ export default async (maxInputLenght: number) => {
     passEncoder.dispatchWorkgroups(1, 1);
     passEncoder.end();
 
-    const gpuReadBuffer = device.createBuffer({
-      size: resultMatrixBufferSize,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
-    });
+    // const gpuReadBuffer = device.createBuffer({
+    //   size: resultMatrixBufferSize,
+    //   usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+    // });
 
-    commandEncoder.copyBufferToBuffer(
-      resultMatrixBuffer,
-      0,
-      gpuReadBuffer,
-      0,
-      resultMatrixBufferSize
-    );
+    // commandEncoder.copyBufferToBuffer(
+    //   resultMatrixBuffer,
+    //   0,
+    //   gpuReadBuffer,
+    //   0,
+    //   resultMatrixBufferSize
+    // );
 
     const gpuReadindexBuffer = device.createBuffer({
       size: Int32Array.BYTES_PER_ELEMENT,
@@ -141,23 +141,22 @@ export default async (maxInputLenght: number) => {
       Int32Array.BYTES_PER_ELEMENT
     );
 
-
     device.queue.writeBuffer(gpuBufferFirstMatrix, 0, input, 0, input.length);
     device.queue.writeBuffer(gpuBufferSize, 0, new Uint32Array([input.length]), 0, 1);
 
     const gpuCommands = commandEncoder.finish();
     device.queue.submit([gpuCommands]);
 
-    await gpuReadBuffer.mapAsync(GPUMapMode.READ);
-    const arrayBuffer = gpuReadBuffer.getMappedRange();
+    // await gpuReadBuffer.mapAsync(GPUMapMode.READ);
+    // const arrayBuffer = gpuReadBuffer.getMappedRange();
 
     await gpuReadindexBuffer.mapAsync(GPUMapMode.READ);
     const index = new Uint32Array(gpuReadindexBuffer.getMappedRange())[0];
 
     let str = "";
-    for (let value of Array.from(new Uint32Array(arrayBuffer))) {
-      str += value.toString(16).padStart(2, '0');
-    }
+    // for (let value of Array.from(new Uint32Array(arrayBuffer))) {
+    //   str += value.toString(16).padStart(2, '0');
+    // }
     return {str, index};
   }
 

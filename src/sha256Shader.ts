@@ -15,7 +15,7 @@ struct SHA256_CTX {
 
   @group(0) @binding(0) var<storage, read> input : array<u32>;
   @group(0) @binding(1) var<storage, read> inputSize : array<u32>;
-  @group(0) @binding(2) var<storage, read_write> result : array<u32>;
+  // @group(0) @binding(2) var<storage, read_write> result : array<u32>;
   @group(0) @binding(3) var<storage, read_write> resultIndex : array<u32>;
 
   const SHA256_BLOCK_SIZE = 32;
@@ -225,9 +225,9 @@ struct SHA256_CTX {
     sha256_final(&ctx2, &resBuf);
 
     if (resBuf[31] == 0 && resBuf[30] == 0 && resBuf[29] == 0 && resBuf[28] == 0) {
-      for (var i=0; i < 32; i++) {
-        result[i] = resBuf[i];
-      }
+      // for (var i=0; i < 32; i++) {
+      //   result[i] = resBuf[i];
+      // }
       resultIndex[0] = global_id[0];
     }
   }
