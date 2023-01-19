@@ -224,7 +224,7 @@ struct SHA256_CTX {
     
     sha256_final(&ctx2, &resBuf);
 
-    if (resBuf[31] == 0 && resBuf[30] == 0) {
+    if (resBuf[31] == 0 && resBuf[30] == 0 && resBuf[29] == 0 && resBuf[28] == 0) {
       for (var i=0; i < 32; i++) {
         result[i] = resBuf[i];
       }
