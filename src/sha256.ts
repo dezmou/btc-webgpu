@@ -85,8 +85,6 @@ export default async (maxInputLenght: number) => {
     }
   });
 
-
-
   const hash = async (input: Uint32Array) => {
     const commandEncoder = device.createCommandEncoder();
 
@@ -115,7 +113,6 @@ export default async (maxInputLenght: number) => {
 
     const gpuCommands = commandEncoder.finish();
     device.queue.submit([gpuCommands]);
-
 
     await gpuReadBuffer.mapAsync(GPUMapMode.READ);
     const arrayBuffer = gpuReadBuffer.getMappedRange();
