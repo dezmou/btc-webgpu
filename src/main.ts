@@ -2,6 +2,8 @@ import sha256 from './sha256';
 import './style.css'
 
 ;(async () => {
-  const res = await sha256("chien");
+  const sha = await sha256(1024);
+  const res  = await sha.hash("chien")
   console.log(res);
+  
 })()
