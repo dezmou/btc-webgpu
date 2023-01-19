@@ -85,7 +85,7 @@ export default async (maxInputLenght: number) => {
     }
   });
 
-  const hash = async (input : Uint32Array) => {
+  const hash = async (input: Uint32Array) => {
     const commandEncoder = device.createCommandEncoder();
 
     const passEncoder = commandEncoder.beginComputePass();
@@ -108,8 +108,6 @@ export default async (maxInputLenght: number) => {
       resultMatrixBufferSize
     );
 
-    const fromHexString = (hexString: string) => Uint32Array.from((hexString.split("").map(e => e.charCodeAt(0))));
-
     device.queue.writeBuffer(gpuBufferFirstMatrix, 0, input, 0, input.length);
     device.queue.writeBuffer(gpuBufferSize, 0, new Uint32Array([input.length]), 0, 1);
 
@@ -122,7 +120,7 @@ export default async (maxInputLenght: number) => {
 
     let str = "";
     for (let value of Array.from(new Uint32Array(arrayBuffer))) {
-      str += value.toString(16);
+      str += value.toString(16).padStart(2, '0');
     }
     return str;
   }
@@ -131,8 +129,15 @@ export default async (maxInputLenght: number) => {
     return await hash(Uint32Array.from((inputString.split("").map(e => e.charCodeAt(0)))))
   }
 
+  const hashHex = async (inputHexString: string) => {
+    const fromHexString = (hexString:string) =>
+      Uint32Array.from(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+
+    return await hash(fromHexString(inputHexString))
+  }
 
   return {
     hashString,
+    hashHex,
   }
 }
