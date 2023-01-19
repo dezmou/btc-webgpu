@@ -202,13 +202,13 @@ struct SHA256_CTX {
     (*ctx).state[7] = 0x5be0cd19;
   }
 
-  @compute @workgroup_size(1, 1)
+  @compute @workgroup_size(256, 1)
   fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     var buf : array<u32, SHA256_BLOCK_SIZE>;
 
     var ctx : SHA256_CTX;
     sha256_init(&ctx);
-    ctx.changeNonce = false;
+    ctx.changeNonce = true;
     ctx.changeNonceValue = global_id[0];
     ctx.useInputData = true;
     sha256_update(&ctx, inputSize[0], buf);
@@ -223,10 +223,10 @@ struct SHA256_CTX {
     
     sha256_final(&ctx2, &resBuf);
 
-    // if (buf[31] == 0) {
+    if (resBuf[31] == 0 && resBuf[30] == 0) {
       for (var i=0; i < 32; i++) {
         result[i] = resBuf[i];
       }
-    // }
+    }
   }
 `
