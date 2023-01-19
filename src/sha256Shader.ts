@@ -6,6 +6,11 @@ struct SHA256_CTX {
     bitlen : array<u32, 2>,
     state : array<u32, 8>,
     info : u32,
+    
+    changeNonce : bool,
+    changeNonceValue : u32,
+
+    useInputData : bool,
   };
 
   @group(0) @binding(0) var<storage, read> input : array<u32>;
@@ -98,16 +103,21 @@ struct SHA256_CTX {
   }
 
 
-  fn sha256_update(ctx : ptr<function, SHA256_CTX>, len : u32)
+  fn sha256_update(ctx : ptr<function, SHA256_CTX>, len : u32, in : array<u32,32>)
   {
     for (var i :u32 = 0; i < len; i++) {
       
       var char : u32 = input[i];
+      if (((*ctx).useInputData)){
+        if (i == len - 1 && (*ctx).changeNonce) {
+          char = (*ctx).changeNonceValue;
+        }else {
+          char = input[i];
+        }
+      }else {
+        char = in[i];
+      }
 
-      // Change last byte of nounce
-      // if (i == len - 1){
-      //   char = (*ctx).worker_id;
-      // }
       
       (*ctx).data[(*ctx).datalen] = char;
       (*ctx).datalen++;
@@ -179,7 +189,6 @@ struct SHA256_CTX {
   }
 
   fn sha256_init(ctx : ptr<function, SHA256_CTX>) {
-    // CTX INIT
     (*ctx).datalen = 0;
     (*ctx).bitlen[0] = 0;
     (*ctx).bitlen[1] = 0;
@@ -195,16 +204,28 @@ struct SHA256_CTX {
 
   @compute @workgroup_size(1, 1)
   fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
-    var ctx : SHA256_CTX;
     var buf : array<u32, SHA256_BLOCK_SIZE>;
 
+    var ctx : SHA256_CTX;
     sha256_init(&ctx);
-    sha256_update(&ctx, inputSize[0]);
+    ctx.changeNonce = false;
+    ctx.changeNonceValue = global_id[0];
+    ctx.useInputData = true;
+    sha256_update(&ctx, inputSize[0], buf);
     sha256_final(&ctx, &buf);
+
+    var ctx2 : SHA256_CTX;
+    sha256_init(&ctx2);
+    ctx2.changeNonce = false;
+    ctx2.useInputData = false;
+    sha256_update(&ctx2, 32, buf);
+    var resBuf : array<u32, SHA256_BLOCK_SIZE>;
+    
+    sha256_final(&ctx2, &resBuf);
 
     // if (buf[31] == 0) {
       for (var i=0; i < 32; i++) {
-        result[i] = buf[i];
+        result[i] = resBuf[i];
       }
     // }
   }

@@ -7,8 +7,7 @@ const NOUNCE = "42a14695"
 ;(async () => {
   const sha = await sha256(1024);
   const res  = await sha.hashHex(BTC_HEADER + NOUNCE)
+  console.log(res);
 
-  const res2  = await sha.hashHex(res)
-  console.log(res2);
 
 })()
