@@ -17,7 +17,6 @@ export default async (inputString : string) => {
     new Int32Array(arrayBufferFirstMatrix).set(firstMatrix);
     gpuBufferFirstMatrix.unmap();
 
-
     const size = new Uint32Array([firstMatrix.length]);
     const gpuBufferSize = device.createBuffer({
       mappedAtCreation: true,
