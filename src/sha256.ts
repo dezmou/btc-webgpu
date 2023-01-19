@@ -16,10 +16,17 @@ export default async (maxInputLenght: number) => {
   });
 
   const resultMatrixBufferSize = Uint32Array.BYTES_PER_ELEMENT * 32;
+  
   const resultMatrixBuffer = device.createBuffer({
     size: resultMatrixBufferSize,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
   });
+
+  const resultIndexBuffer = device.createBuffer({
+    size: Int32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+  });
+
 
   const bindGroupLayout = (device).createBindGroupLayout({
     entries: [
@@ -39,6 +46,13 @@ export default async (maxInputLenght: number) => {
       },
       {
         binding: 2,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+          type: "storage"
+        }
+      },
+      {
+        binding: 3,
         visibility: GPUShaderStage.COMPUTE,
         buffer: {
           type: "storage"
@@ -66,6 +80,12 @@ export default async (maxInputLenght: number) => {
         binding: 2,
         resource: {
           buffer: resultMatrixBuffer
+        }
+      },
+      {
+        binding: 3,
+        resource: {
+          buffer: resultIndexBuffer
         }
       }
     ]
@@ -108,6 +128,20 @@ export default async (maxInputLenght: number) => {
       resultMatrixBufferSize
     );
 
+    const gpuReadindexBuffer = device.createBuffer({
+      size: Int32Array.BYTES_PER_ELEMENT,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+    });
+
+    commandEncoder.copyBufferToBuffer(
+      resultIndexBuffer,
+      0,
+      gpuReadindexBuffer,
+      0,
+      Int32Array.BYTES_PER_ELEMENT
+    );
+
+
     device.queue.writeBuffer(gpuBufferFirstMatrix, 0, input, 0, input.length);
     device.queue.writeBuffer(gpuBufferSize, 0, new Uint32Array([input.length]), 0, 1);
 
@@ -116,6 +150,10 @@ export default async (maxInputLenght: number) => {
 
     await gpuReadBuffer.mapAsync(GPUMapMode.READ);
     const arrayBuffer = gpuReadBuffer.getMappedRange();
+
+    await gpuReadindexBuffer.mapAsync(GPUMapMode.READ);
+    const index = new Uint32Array(gpuReadindexBuffer.getMappedRange())[0];
+    console.log(index);
 
     let str = "";
     for (let value of Array.from(new Uint32Array(arrayBuffer))) {
